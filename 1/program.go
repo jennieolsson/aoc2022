@@ -5,34 +5,25 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sort"
 	"strconv"
 )
 
 func main() {
 	allElfs := readFile()
-	max := findMaximumCalories(allElfs)
+	maxValues := findMaximumCalories(allElfs, 3)
 
-	fmt.Println(fmt.Sprintf("Found max is %d", max))
+	fmt.Println("Found max is")
+	fmt.Println(maxValues)
 }
 
-func findMaximumCalories(allElfs [][]int) int {
-	max := 0
-
-	for _, currentElf := range allElfs {
-		currentElfSum := 0
-		for _, calorieCount := range currentElf {
-			currentElfSum += calorieCount
-		}
-		if currentElfSum > max {
-			max = currentElfSum
-		}
-	}
-	return max
+func findMaximumCalories(allElfs []int, numbersOfMax int) []int {
+	sort.Ints(allElfs)
+	startIndex := len(allElfs) - (numbersOfMax)
+	return allElfs[startIndex:len(allElfs)]
 }
 
-func readFile() [][]int {
-	allElfs := make([][]int, 0)
-
+func readFile() []int {
 	f, err := os.Open("input")
 
 	if err != nil {
@@ -43,20 +34,25 @@ func readFile() [][]int {
 
 	scanner := bufio.NewScanner(f)
 
-	currentElf := make([]int, 0)
+	allElfs := make([]int, 0)
+	currentElfSum := 0
 	for scanner.Scan() {
 		line := scanner.Text()
 
-		if line == "" && len(currentElf) > 0 {
-			allElfs = append(allElfs, currentElf)
-			currentElf = make([]int, 0)
+		if len(line) == 0 && currentElfSum > 0 {
+			allElfs = append(allElfs, currentElfSum)
+			currentElfSum = 0
 		} else {
 			calorieCount, err := strconv.Atoi(line)
 
 			if err == nil {
-				currentElf = append(currentElf, calorieCount)
+				currentElfSum += calorieCount
 			}
 		}
+	}
+
+	if currentElfSum > 0 {
+		allElfs = append(allElfs, currentElfSum)
 	}
 
 	if err := scanner.Err(); err != nil {
